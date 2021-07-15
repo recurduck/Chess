@@ -368,14 +368,21 @@ function isCheck(pieceCoord) {
     res = getAllPossibleCoordsKnight(pieceCoord)
     for (var i = 0; i < res.length; i++) {
         var possibleCoords = { i: res[i].i, j: res[i].j }
-        if (isBlackKnight(possibleCoords) || isWhiteKnight(possibleCoords) && !isWhiteCell(possibleCoords) === gIsWhiteTurn)
+        if ((isBlackKnight(possibleCoords) || isWhiteKnight(possibleCoords)) && !isWhiteCell(possibleCoords) === gIsWhiteTurn)
+            return true
+    }
+    res = getAllPossibleCoordsKing(pieceCoord)
+    console.log(res)
+    for (var i = 0; i < res.length; i++) {
+        var possibleCoords = { i: res[i].i, j: res[i].j }
+        if (isBlackKing(possibleCoords) || isWhiteKing(possibleCoords) && !isWhiteCell(possibleCoords) === gIsWhiteTurn)
             return true
     }
     return false
 }
 
 function isWhiteCell(coord) {
-    return isWhiteRook(coord) || isWhiteKing(coord) || isWhiteQueen(coord) || isWhiteBishop(coord) || isBlackKnight(coord) || isWhitePawn(coord)
+    return isWhiteRook(coord) || isWhiteKing(coord) || isWhiteQueen(coord) || isWhiteBishop(coord) || isWhiteKnight(coord) || isWhitePawn(coord)
 }
 
 function isWhiteKing(coord) {
