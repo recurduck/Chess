@@ -15,8 +15,9 @@ body {
 }
 
 
-.mark {
-    background-color: rgb(83, 83, 83)
+.mark::before {
+    content: '●'; 
+    color: rgba(0, 0, 0, 0.246);   
 }
 
 .center {
