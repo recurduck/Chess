@@ -1,5 +1,12 @@
 'use strict'
-
+/*
+TODO: 
+when someone do a move - check if the king is on check - if so
+- get all the route to the threatning 
+- filter the cells route by checking if one of them can be reached by the defensive side
+    in the filter we need to make sure that by capture the route - the king will not find his self again checked
+    if the filter will return us length that is same as before - its checkMate!
+*/
 // Pieces Types
 var KING_WHITE = '♔';
 var QUEEN_WHITE = '♕';
