@@ -24,8 +24,8 @@ var gIsWhiteTurn = true;
 function restartGame() {
     gBoard = buildBoard();
     gIsWhiteTurn = true;
-    gWhiteKingPos = {i: 7, j: 4}
-    gBlackKingPos = {i: 0, j: 4}
+    gWhiteKingPos = { i: 7, j: 4 }
+    gBlackKingPos = { i: 0, j: 4 }
     renderBoard(gBoard);
 }
 
@@ -87,9 +87,7 @@ function cellClicked(elCell) {
         cleanBoard();
         return;
     }
-
     cleanBoard();
-
     elCell.classList.add('selected');
     gSelectedElCell = elCell;
 
@@ -97,49 +95,30 @@ function cellClicked(elCell) {
     var cellCoord = getCellCoord(elCell.id);
     var piece = gBoard[cellCoord.i][cellCoord.j];
 
-    var possibleCoords = [];
-    if (gIsWhiteTurn) {
-        switch (piece) {
-            case ROOK_WHITE:
-                possibleCoords = getAllPossibleCoordsRook(cellCoord);
-                break;
-            case BISHOP_WHITE:
-                possibleCoords = getAllPossibleCoordsBishop(cellCoord);
-                break;
-            case KNIGHT_WHITE:
-                possibleCoords = getAllPossibleCoordsKnight(cellCoord);
-                break;
-            case PAWN_WHITE:
-                possibleCoords = getAllPossibleCoordsPawn(cellCoord, piece === PAWN_WHITE);
-                break;
-            case QUEEN_WHITE:
-                possibleCoords = getAllPossibleCoordsQueen(cellCoord);
-                break;
-            case KING_WHITE:
-                possibleCoords = getAllPossibleCoordsKing(cellCoord);
-        }
-    } else {
-        switch (piece) {
-            case ROOK_BLACK:
-                possibleCoords = getAllPossibleCoordsRook(cellCoord);
-                break;
-            case BISHOP_BLACK:
-                possibleCoords = getAllPossibleCoordsBishop(cellCoord);
-                break;
-            case KNIGHT_BLACK:
-                possibleCoords = getAllPossibleCoordsKnight(cellCoord);
-                break;
-            case PAWN_BLACK:
-                possibleCoords = getAllPossibleCoordsPawn(cellCoord, piece === PAWN_WHITE);
-                break
-            case QUEEN_BLACK:
-                possibleCoords = getAllPossibleCoordsQueen(cellCoord);
-                break;
-            case KING_BLACK:
-                possibleCoords = getAllPossibleCoordsKing(cellCoord);
-        }
-    }
+    var possibleCoords = getAllPossibleCoords(piece, cellCoord);
+    // if (gIsWhiteTurn ? isCheck(gWhiteKingPos) : isCheck(gBlackKingPos)) {
+        //console.log(`Your ${gIsWhiteTurn?'white':'black'} King is check!`)
+        possibleCoords = possibleCoords.filter(toCoord => !nextStepModal(cellCoord, toCoord))
+    // }
+    console.log(possibleCoords)
     markCells(possibleCoords);
+}
+
+function nextStepModal(fromCoord, toCoord) {
+    //return false if in the next step the king is still checked
+    var nextStepBoard = JSON.parse(JSON.stringify(gBoard))
+    var piece = nextStepBoard[fromCoord.i][fromCoord.j];
+    var newWhiteKingPos = gWhiteKingPos;
+    var newBlackKingPos = gBlackKingPos;
+    // update the NEXT STEP MODEL
+    nextStepBoard[fromCoord.i][fromCoord.j] = '';
+    nextStepBoard[toCoord.i][toCoord.j] = isPawnAQueen(toCoord, piece);
+    if (piece === KING_WHITE) newWhiteKingPos = { i: toCoord.i, j: toCoord.j }
+    else if (piece === KING_BLACK) newBlackKingPos = { i: toCoord.i, j: toCoord.j }
+    // console.table(nextStepBoard)
+    // console.log(!gIsWhiteTurn ? newBlackKingPos : newWhiteKingPos)
+    // console.log('next modal king isCheck:', isCheck(!gIsWhiteTurn ? newBlackKingPos : newWhiteKingPos, gIsWhiteTurn, nextStepBoard))
+    return isCheck(!gIsWhiteTurn ? newBlackKingPos : newWhiteKingPos, gIsWhiteTurn, nextStepBoard)
 }
 
 function movePiece(elFromCell, elToCell) {
@@ -149,21 +128,36 @@ function movePiece(elFromCell, elToCell) {
     var piece = gBoard[fromCoord.i][fromCoord.j];
     gBoard[fromCoord.i][fromCoord.j] = '';
     gBoard[toCoord.i][toCoord.j] = isPawnAQueen(toCoord, piece);
+    if (piece === KING_WHITE) gWhiteKingPos = { i: toCoord.i, j: toCoord.j }
+    else if (piece === KING_BLACK) gBlackKingPos = { i: toCoord.i, j: toCoord.j }
     gIsWhiteTurn = !gIsWhiteTurn
+    console.log(gIsWhiteTurn ? 'White turn' : 'Black turn')
     // update the DOM
     elFromCell.innerText = '';
     elToCell.innerText = isPawnAQueen(toCoord, piece);
-    // check Checkmate
-    if(piece === ((!gIsWhiteTurn) ? KING_WHITE : KING_BLACK)) {
-        if(piece === KING_WHITE) gWhiteKingPos = {i: toCoord.i, j: toCoord.j}
-        else gBlackKingPos = {i: toCoord.i, j: toCoord.j}
-    } else {
-        var kingCheck = (!gIsWhiteTurn) ? gBlackKingPos : gWhiteKingPos
-        if(getAllPossibleCoordsKing(kingCheck).length === 0 && isCheck(kingCheck).length > 1)
-            console.log(`CheckMate!!!!!!!! ${(!gIsWhiteTurn) ? 'White' : 'Black'} Win!`, ) 
-        //else if isCheck(kinkcheck) for arr do isCheck on the options to block..... if there is true is not checkmate
+    isCheckMate(!gIsWhiteTurn ? gBlackKingPos : gWhiteKingPos);
+    //////////////////////////////////////////////// check Checkmate
+    // if (piece === ((!gIsWhiteTurn) ? KING_WHITE : KING_BLACK)) {
+    //     if (piece === KING_WHITE) gWhiteKingPos = { i: toCoord.i, j: toCoord.j }
+    //     else gBlackKingPos = { i: toCoord.i, j: toCoord.j }
+    // } else {
+    //     var kingCheck = (!gIsWhiteTurn) ? gBlackKingPos : gWhiteKingPos
+    //     if (getAllPossibleCoordsKing(kingCheck).length === 0 && isCheck(kingCheck).length > 1)
+    //         console.log(`CheckMate!!!!!!!! ${(!gIsWhiteTurn) ? 'White' : 'Black'} Win!`,)
+    //     else if (getAllPossibleCoordsKing(kingCheck).length === 0 && isCheck(kingCheck).length === 1) {
+    //         var optionsToProtect = isCheck(kingCheck);
+    //         console.log('optionsToProtect', optionsToProtect)
+    //         for (var i = 0; i < optionsToProtect[0].length; i++) {
+    //             console.log(canBeProtected(optionsToProtect[0][i]))
+    //             // console.log(isCheck(optionsToProtect[0][i], !gIsWhiteTurn))
+    //         }
+    //     } //for arr do isCheck on the options to block..... if there is true is not checkmate
 
-    }
+    // }
+}
+function isCheckMate(kingPosition) {
+    if (getAllPossibleCoordsKing(kingPosition).length === 0 && isCheck(kingPosition).length > 1)
+        console.log(`CheckMate!!!!!!!! ${(!gIsWhiteTurn) ? 'White' : 'Black'} Win!`,)
 }
 
 function markCells(coords) {
@@ -196,33 +190,81 @@ function getSelector(coord) {
 }
 
 
-function getAllPossibleCoordsPawn(pieceCoord, isWhite) {
+function getAllPossibleCoords(piece, cellCoord) {
+    var possibleCoords = []
+    if (gIsWhiteTurn) {
+        switch (piece) {
+            case ROOK_WHITE:
+                possibleCoords = getAllPossibleCoordsRook(cellCoord);
+                break;
+            case BISHOP_WHITE:
+                possibleCoords = getAllPossibleCoordsBishop(cellCoord);
+                break;
+            case KNIGHT_WHITE:
+                possibleCoords = getAllPossibleCoordsKnight(cellCoord);
+                break;
+            case PAWN_WHITE:
+                possibleCoords = getAllPossibleCoordsPawn(cellCoord);
+                break;
+            case QUEEN_WHITE:
+                possibleCoords = getAllPossibleCoordsQueen(cellCoord);
+                break;
+            case KING_WHITE:
+                possibleCoords = getAllPossibleCoordsKing(cellCoord);
+        }
+    } else {
+        switch (piece) {
+            case ROOK_BLACK:
+                possibleCoords = getAllPossibleCoordsRook(cellCoord);
+                break;
+            case BISHOP_BLACK:
+                possibleCoords = getAllPossibleCoordsBishop(cellCoord);
+                break;
+            case KNIGHT_BLACK:
+                possibleCoords = getAllPossibleCoordsKnight(cellCoord);
+                break;
+            case PAWN_BLACK:
+                possibleCoords = getAllPossibleCoordsPawn(cellCoord);
+                break
+            case QUEEN_BLACK:
+                possibleCoords = getAllPossibleCoordsQueen(cellCoord);
+                break;
+            case KING_BLACK:
+                possibleCoords = getAllPossibleCoordsKing(cellCoord);
+        }
+    }
+    return possibleCoords;
+}
+
+
+function getAllPossibleCoordsPawn(pieceCoord, against = gIsWhiteTurn, board = gBoard) {
     var res = [];
+    var isWhite = board[pieceCoord.i][pieceCoord.j] === PAWN_WHITE
     var diff = (isWhite) ? -1 : 1;
     var nextCoord = { i: pieceCoord.i + diff, j: pieceCoord.j };
     var diago1Coord = { i: pieceCoord.i + diff, j: pieceCoord.j + 1 }
     var diago2Coord = { i: pieceCoord.i + diff, j: pieceCoord.j - 1 }
-    if (!isEmptyCell(diago1Coord) && (isWhiteCell(diago1Coord) !== gIsWhiteTurn) && pieceCoord.j + 1 < 8)
+    if (!isEmptyCell(diago1Coord, board) && (isWhitePiece(diago1Coord, board) !== against) && pieceCoord.j + 1 < 8)
         res.push(diago1Coord)
-    if (!isEmptyCell(diago2Coord) && (isWhiteCell(diago2Coord) !== gIsWhiteTurn) && pieceCoord.j - 1 > 0)
+    if (!isEmptyCell(diago2Coord, board) && (isWhitePiece(diago2Coord, board) !== against) && pieceCoord.j - 1 >= 0)
         res.push(diago2Coord)
-    if (isEmptyCell(nextCoord)) res.push(nextCoord);
+    if (isEmptyCell(nextCoord, board)) res.push(nextCoord);
     else return res;
     if ((pieceCoord.i === 1 && !isWhite) || (pieceCoord.i === 6 && isWhite)) {
         diff *= 2;
         nextCoord = { i: pieceCoord.i + diff, j: pieceCoord.j };
-        if (isEmptyCell(nextCoord)) res.push(nextCoord);
+        if (isEmptyCell(nextCoord, board)) res.push(nextCoord);
     }
     return res;
 }
 
 
-function getAllPossibleCoordsRook(pieceCoord) {
+function getAllPossibleCoordsRook(pieceCoord, board = gBoard) {
     var res = [];
     for (var i = pieceCoord.i - 1; i >= 0; i--) {
         var coord = { i, j: pieceCoord.j };
-        if (!isEmptyCell(coord)) {
-            if (isWhiteCell(coord) === gIsWhiteTurn) break;
+        if (!isEmptyCell(coord, board)) {
+            if (isWhitePiece(coord, board) === gIsWhiteTurn) break;
             else {
                 res.push(coord);
                 break;
@@ -232,8 +274,8 @@ function getAllPossibleCoordsRook(pieceCoord) {
     }
     for (var i = pieceCoord.i + 1; i < 8; i++) {
         var coord = { i, j: pieceCoord.j };
-        if (!isEmptyCell(coord)) {
-            if (isWhiteCell(coord) === gIsWhiteTurn) break;
+        if (!isEmptyCell(coord, board)) {
+            if (isWhitePiece(coord, board) === gIsWhiteTurn) break;
             else {
                 res.push(coord);
                 break;
@@ -243,8 +285,8 @@ function getAllPossibleCoordsRook(pieceCoord) {
     }
     for (var j = pieceCoord.j - 1; j >= 0; j--) {
         var coord = { i: pieceCoord.i, j };
-        if (!isEmptyCell(coord)) {
-            if (isWhiteCell(coord) === gIsWhiteTurn) break;
+        if (!isEmptyCell(coord, board)) {
+            if (isWhitePiece(coord, board) === gIsWhiteTurn) break;
             else {
                 res.push(coord);
                 break;
@@ -254,8 +296,8 @@ function getAllPossibleCoordsRook(pieceCoord) {
     }
     for (var j = pieceCoord.j + 1; j < 8; j++) {
         var coord = { i: pieceCoord.i, j };
-        if (!isEmptyCell(coord)) {
-            if (isWhiteCell(coord) === gIsWhiteTurn) break;
+        if (!isEmptyCell(coord, board)) {
+            if (isWhitePiece(coord, board) === gIsWhiteTurn) break;
             else {
                 res.push(coord);
                 break;
@@ -267,13 +309,13 @@ function getAllPossibleCoordsRook(pieceCoord) {
 }
 
 
-function getAllPossibleCoordsBishop(pieceCoord) {
+function getAllPossibleCoordsBishop(pieceCoord, board = gBoard) {
     var res = [];
     var i = pieceCoord.i - 1;
     for (var idx = pieceCoord.j + 1; i >= 0 && idx < 8; idx++) {
         var coord = { i: i--, j: idx };
-        if (!isEmptyCell(coord)) {
-            if (isWhiteCell(coord) === gIsWhiteTurn) break;
+        if (!isEmptyCell(coord, board)) {
+            if (isWhitePiece(coord, board) === gIsWhiteTurn) break;
             else {
                 res.push(coord);
                 break;
@@ -284,8 +326,8 @@ function getAllPossibleCoordsBishop(pieceCoord) {
     i = pieceCoord.i - 1;
     for (var idx = pieceCoord.j - 1; i >= 0 && idx >= 0; idx--) {
         var coord = { i: i--, j: idx };
-        if (!isEmptyCell(coord)) {
-            if (isWhiteCell(coord) === gIsWhiteTurn) break;
+        if (!isEmptyCell(coord, board)) {
+            if (isWhitePiece(coord, board) === gIsWhiteTurn) break;
             else {
                 res.push(coord);
                 break;
@@ -296,8 +338,8 @@ function getAllPossibleCoordsBishop(pieceCoord) {
     i = pieceCoord.i + 1;
     for (var idx = pieceCoord.j + 1; i < 8 && idx < 8; idx++) {
         var coord = { i: i++, j: idx };
-        if (!isEmptyCell(coord)) {
-            if (isWhiteCell(coord) === gIsWhiteTurn) break;
+        if (!isEmptyCell(coord, board)) {
+            if (isWhitePiece(coord, board) === gIsWhiteTurn) break;
             else {
                 res.push(coord);
                 break;
@@ -308,8 +350,8 @@ function getAllPossibleCoordsBishop(pieceCoord) {
     i = pieceCoord.i + 1;
     for (var idx = pieceCoord.j - 1; i < 8 && idx >= 0; idx--) {
         var coord = { i: i++, j: idx };
-        if (!isEmptyCell(coord)) {
-            if (isWhiteCell(coord) === gIsWhiteTurn) break;
+        if (!isEmptyCell(coord, board)) {
+            if (isWhitePiece(coord, board) === gIsWhiteTurn) break;
             else {
                 res.push(coord);
                 break;
@@ -321,7 +363,7 @@ function getAllPossibleCoordsBishop(pieceCoord) {
 }
 
 
-function getAllPossibleCoordsKnight(pieceCoord) {
+function getAllPossibleCoordsKnight(pieceCoord, board = gBoard) {
     var res = [];
     for (var i = pieceCoord.i - 2; i <= pieceCoord.i + 2; i++) {
         if (i === pieceCoord.i) continue;
@@ -330,7 +372,7 @@ function getAllPossibleCoordsKnight(pieceCoord) {
             if (i === pieceCoord.i && j === pieceCoord.j) continue;
             if (j < 0 || j >= 8) continue;
             var coord = { i: i, j: j };
-            if (!isEmptyCell(coord) && isWhiteCell(coord) === gIsWhiteTurn) continue;
+            if (!isEmptyCell(coord, board) && isWhitePiece(coord, board) === gIsWhiteTurn) continue;
             if ((Math.abs(pieceCoord.i - i) + Math.abs(pieceCoord.j - j)) === 3) res.push(coord);
         }
     }
@@ -338,7 +380,7 @@ function getAllPossibleCoordsKnight(pieceCoord) {
 }
 
 
-function getAllPossibleCoordsKing(pieceCoord) {
+function getAllPossibleCoordsKing(pieceCoord, board = gBoard) {
     var res = [];
     for (var i = pieceCoord.i - 1; i <= pieceCoord.i + 1; i++) {
         if (i < 0 || i >= 8) continue;
@@ -346,7 +388,7 @@ function getAllPossibleCoordsKing(pieceCoord) {
             if (i === pieceCoord.i && j === pieceCoord.j) continue;
             if (j < 0 || j >= 8) continue;
             var coord = { i: i, j: j };
-            if (!isEmptyCell(coord) && isWhiteCell(coord) === gIsWhiteTurn) continue;
+            if (!isEmptyCell(coord, board) && isWhitePiece(coord, board) === gIsWhiteTurn) continue;
             if (isCheck(coord)) continue;
             res.push(coord);
         }
@@ -360,70 +402,79 @@ function getAllPossibleCoordsQueen(pieceCoord) {
 }
 
 
-function isCheck(pieceCoord) {
-    if(kingIsAround(pieceCoord) || pawnIsAround(pieceCoord)) return true;
-    var threatning = []
-    var res = getAllPossibleCoordsRook(pieceCoord)
+function isCheck(pieceCoord, against = gIsWhiteTurn, board = gBoard) {
+    // debugger
+    var threatningPieces = []
+    if (kingIsAround(pieceCoord, against, board)) threatningPieces.push(...kingIsAround(pieceCoord, against, board))
+    if (pawnIsAround(pieceCoord, against, board)) threatningPieces.push(...pawnIsAround(pieceCoord, against, board));
+    var res = getAllPossibleCoordsRook(pieceCoord, board)
     for (var i = 0; i < res.length; i++) {
         var possibleCoords = { i: res[i].i, j: res[i].j }
-        if ((isBlackRook(possibleCoords) || isWhiteRook(possibleCoords) ||
-            isBlackQueen(possibleCoords) || isWhiteQueen(possibleCoords)) && !isWhiteCell(possibleCoords) === gIsWhiteTurn) {
-                threatning.push(res);
-                break;
-                //return true;
-            }
-    }
-    res = getAllPossibleCoordsBishop(pieceCoord)
-    for (var i = 0; i < res.length; i++) {
-        var possibleCoords = { i: res[i].i, j: res[i].j }
-        if ((isBlackBishop(possibleCoords) || isWhiteBishop(possibleCoords) ||
-            isBlackQueen(possibleCoords) || isWhiteQueen(possibleCoords)) && !isWhiteCell(possibleCoords) === gIsWhiteTurn){
-                threatning.push(res);
-                break;
-                //return true;
-            }
-    }
-    res = getAllPossibleCoordsKnight(pieceCoord)
-    for (var i = 0; i < res.length; i++) {
-        var possibleCoords = { i: res[i].i, j: res[i].j }
-        if ((isBlackKnight(possibleCoords) || isWhiteKnight(possibleCoords)) && !isWhiteCell(possibleCoords) === gIsWhiteTurn){
-            threatning.push(res);
-            break;
-            //return true;
+        if ((isBlackRook(possibleCoords, board) || isWhiteRook(possibleCoords, board) ||
+            isBlackQueen(possibleCoords, board) || isWhiteQueen(possibleCoords, board)) && !isWhitePiece(possibleCoords, board) === against) {
+            threatningPieces.push(possibleCoords);
         }
     }
-    return (threatning.length) ? threatning : false
+    res = getAllPossibleCoordsBishop(pieceCoord, board)
+    for (var i = 0; i < res.length; i++) {
+        var possibleCoords = { i: res[i].i, j: res[i].j }
+        if ((isBlackBishop(possibleCoords, board) || isWhiteBishop(possibleCoords, board) ||
+            isBlackQueen(possibleCoords, board) || isWhiteQueen(possibleCoords, board)) && !isWhitePiece(possibleCoords, board) === against) {
+            threatningPieces.push(possibleCoords);
+        }
+    }
+    res = getAllPossibleCoordsKnight(pieceCoord, board)
+    for (var i = 0; i < res.length; i++) {
+        var possibleCoords = { i: res[i].i, j: res[i].j }
+        if ((isBlackKnight(possibleCoords, board) || isWhiteKnight(possibleCoords, board)) && !isWhitePiece(possibleCoords, board) === against) {
+            threatningPieces.push(possibleCoords);
+        }
+    }
+    if (threatningPieces.length) console.log(`Check on ${against ? 'white' : 'black'}, threatning:`, threatningPieces);
+    return (threatningPieces.length) ? threatningPieces : false
 }
 
 
-function pawnIsAround(coord) {
-    if(coord.i < 1 || coord.i > 6) return false
-    var pawnCoord = { i: (gIsWhiteTurn) ? coord.i - 1 : coord.i + 1, j: coord.j };
-    if(pawnCoord.j > 0) 
-        if(gBoard[pawnCoord.i][pawnCoord.j - 1] === ((gIsWhiteTurn) ? PAWN_BLACK : PAWN_WHITE)) return true
-    if(pawnCoord.j < 7)
-        if(gBoard[pawnCoord.i][pawnCoord.j + 1] === ((gIsWhiteTurn) ? PAWN_BLACK : PAWN_WHITE)) return true
-    return false
+function pawnIsAround(coord, against = gIsWhiteTurn, board = gBoard) {
+    var res = []
+    var pawnCoord = { i: (against) ? coord.i - 1 : coord.i + 1, j: coord.j };
+    if (against !== gIsWhiteTurn) {
+        for (var j = - 1; j <= 1; j++) {
+            var currPawn = { i: pawnCoord.i, j: pawnCoord.j + j }
+            if (!isEmptyCell(currPawn, board) && (!against ? isWhitePawn(currPawn, board) : isBlackPawn(currPawn, board))) {
+                var option = [...getAllPossibleCoordsPawn(currPawn, !against, board)].find(obj => obj.i === coord.i && obj.j === coord.j);
+                if (option) res.push(currPawn)
+            }
+        }
+    } else {
+        if (coord.i < 1 || coord.i > 6) return false
+        if (pawnCoord.j > 0)
+            if (board[pawnCoord.i][pawnCoord.j - 1] === ((against) ? PAWN_BLACK : PAWN_WHITE)) res.push({ i: pawnCoord.i, j: pawnCoord.j - 1 })
+        if (pawnCoord.j < 7)
+            if (board[pawnCoord.i][pawnCoord.j + 1] === ((against) ? PAWN_BLACK : PAWN_WHITE)) res.push({ i: pawnCoord.i, j: pawnCoord.j + 1 })
+    }
+    return res.length ? res : false;
 }
 
 
-function kingIsAround(coord) {
+function kingIsAround(coord, against = gIsWhiteTurn, board = gBoard) {
+    var res = []
     for (var i = coord.i - 1; i <= coord.i + 1; i++) {
         if (i < 0 || i >= 8) continue;
         for (var j = coord.j - 1; j <= coord.j + 1; j++) {
             if (i === coord.i && j === coord.j) continue;
             if (j < 0 || j >= 8) continue;
             var aroundCoord = { i: i, j: j };
-            if (!isEmptyCell(aroundCoord) && isWhiteCell(aroundCoord) === gIsWhiteTurn) continue;
-            if(gBoard[i][j] === ((gIsWhiteTurn) ? KING_BLACK : KING_WHITE)) return true
+            if (!isEmptyCell(aroundCoord, board) && isWhitePiece(aroundCoord, board) === against) continue;
+            if (board[i][j] === ((against) ? KING_BLACK : KING_WHITE)) res.push(aroundCoord)
         }
     }
-    return false
+    return res.length ? res : false
 }
 
 
-function isEmptyCell(coord) {
-    return gBoard[coord.i][coord.j] === ''
+function isEmptyCell(coord, board = gBoard) {
+    return board[coord.i][coord.j] === ''
 }
 
 
@@ -434,66 +485,66 @@ function isPawnAQueen(coord, piece) {
 }
 
 
-function isWhiteCell(coord) {
-    return isWhiteRook(coord) || isWhiteKing(coord) || isWhiteQueen(coord) || isWhiteBishop(coord) || isWhiteKnight(coord) || isWhitePawn(coord)
+function isWhitePiece(coord, board = gBoard) {
+    return isWhiteRook(coord, board) || isWhiteKing(coord, board) || isWhiteQueen(coord, board) || isWhiteBishop(coord, board) || isWhiteKnight(coord, board) || isWhitePawn(coord, board)
 }
 
 
-function isWhiteKing(coord) {
-    return gBoard[coord.i][coord.j] === KING_WHITE;
+function isWhiteKing(coord, board = gBoard) {
+    return board[coord.i][coord.j] === KING_WHITE;
 }
 
 
-function isBlackKing(coord) {
-    return gBoard[coord.i][coord.j] === KING_BLACK;
+function isBlackKing(coord, board = gBoard) {
+    return board[coord.i][coord.j] === KING_BLACK;
 }
 
 
-function isWhiteQueen(coord) {
-    return gBoard[coord.i][coord.j] === QUEEN_WHITE;
+function isWhiteQueen(coord, board = gBoard) {
+    return board[coord.i][coord.j] === QUEEN_WHITE;
 }
 
 
-function isBlackQueen(coord) {
-    return gBoard[coord.i][coord.j] === QUEEN_BLACK;
+function isBlackQueen(coord, board = gBoard) {
+    return board[coord.i][coord.j] === QUEEN_BLACK;
 }
 
 
-function isWhiteRook(coord) {
-    return gBoard[coord.i][coord.j] === ROOK_WHITE;
+function isWhiteRook(coord, board = gBoard) {
+    return board[coord.i][coord.j] === ROOK_WHITE;
 }
 
 
-function isBlackRook(coord) {
-    return gBoard[coord.i][coord.j] === ROOK_BLACK;
+function isBlackRook(coord, board = gBoard) {
+    return board[coord.i][coord.j] === ROOK_BLACK;
 }
 
 
-function isWhiteBishop(coord) {
-    return gBoard[coord.i][coord.j] === BISHOP_WHITE;
+function isWhiteBishop(coord, board = gBoard) {
+    return board[coord.i][coord.j] === BISHOP_WHITE;
 }
 
 
-function isBlackBishop(coord) {
-    return gBoard[coord.i][coord.j] === BISHOP_BLACK;
+function isBlackBishop(coord, board = gBoard) {
+    return board[coord.i][coord.j] === BISHOP_BLACK;
 }
 
 
-function isWhiteKnight(coord) {
-    return gBoard[coord.i][coord.j] === KNIGHT_WHITE;
+function isWhiteKnight(coord, board = gBoard) {
+    return board[coord.i][coord.j] === KNIGHT_WHITE;
 }
 
 
-function isBlackKnight(coord) {
-    return gBoard[coord.i][coord.j] === KNIGHT_BLACK;
+function isBlackKnight(coord, board = gBoard) {
+    return board[coord.i][coord.j] === KNIGHT_BLACK;
 }
 
 
-function isWhitePawn(coord) {
-    return gBoard[coord.i][coord.j] === PAWN_WHITE;
+function isWhitePawn(coord, board = gBoard) {
+    return board[coord.i][coord.j] === PAWN_WHITE;
 }
 
 
-function isBlackPawn(coord) {
-    return gBoard[coord.i][coord.j] === PAWN_BLACK;
+function isBlackPawn(coord, board = gBoard) {
+    return board[coord.i][coord.j] === PAWN_BLACK;
 }
