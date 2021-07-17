@@ -1,11 +1,7 @@
 'use strict'
 /*
 TODO: 
-when someone do a move - check if the king is on check - if so
-- get all the route to the threatning 
-- filter the cells route by checking if one of them can be reached by the defensive side
-    in the filter we need to make sure that by capture the route - the king will not find his self again checked
-    if the filter will return us length that is same as before - its checkMate!
+
 */
 // Pieces Types
 var KING_WHITE = '♔';
@@ -26,13 +22,27 @@ var gBoard;
 var gSelectedElCell = null;
 var gWhiteKingPos = null
 var gBlackKingPos = null
+var gWhiteKingMoved = false
+var gWCloseRookMoved = false
+var gWFarRookMoved = false
+var gBlackKingMoved = false
+var gBCloseRookMoved = false
+var gBFarRookMoved = false
 var gIsWhiteTurn = true;
+
 
 function restartGame() {
     gBoard = buildBoard();
     gIsWhiteTurn = true;
     gWhiteKingPos = { i: 7, j: 4 }
+    gWhiteKingMoved = false
+    gWCloseRookMoved = false
+    gWFarRookMoved = false
+    gBlackKingMoved = false
+    gBCloseRookMoved = false
+    gBFarRookMoved = false
     gBlackKingPos = { i: 0, j: 4 }
+    
     renderBoard(gBoard);
 }
 
@@ -127,6 +137,7 @@ function nextStepModal(fromCoord, toCoord) {
     return isCheck(!gIsWhiteTurn ? newBlackKingPos : newWhiteKingPos, gIsWhiteTurn, nextStepBoard)
 }
 
+
 function movePiece(elFromCell, elToCell) {
     var fromCoord = getCellCoord(elFromCell.id);
     var toCoord = getCellCoord(elToCell.id);
@@ -143,6 +154,8 @@ function movePiece(elFromCell, elToCell) {
     elToCell.innerText = isPawnAQueen(toCoord, piece);
     if(isCheckMate(!gIsWhiteTurn ? gBlackKingPos : gWhiteKingPos)) alert('CheckMate!!!!!')
 }
+
+
 function isCheckMate(kingPosition) {
     if (getAllPossibleCoordsKing(kingPosition).length === 0 && isCheck(kingPosition).length > 1) return true
         // console.log(`CheckMate!!!!!!!! ${(!gIsWhiteTurn) ? 'White' : 'Black'} Win!`,)
@@ -161,6 +174,7 @@ function isCheckMate(kingPosition) {
     }
 }
 
+
 function markCells(coords) {
     for (var i = 0; i < coords.length; i++) {
         var coord = coords[i];
@@ -170,6 +184,7 @@ function markCells(coords) {
     }
 }
 
+
 // DOM <-> MODAL  
 // Gets a string such as:  'cell-2-7' and returns {i:2, j:7}
 function getCellCoord(strCellId) {
@@ -177,6 +192,7 @@ function getCellCoord(strCellId) {
     var coord = { i: +parts[1], j: +parts[2] };
     return coord;
 }
+
 
 function cleanBoard() {
     var elTds = document.querySelectorAll('.mark, .hided-mark, .selected');
@@ -249,7 +265,7 @@ function getAllPossibleCoordsPawn(pieceCoord, against = gIsWhiteTurn, board = gB
         res.push(diago1Coord)
     if (!isEmptyCell(diago2Coord, board) && (isWhitePiece(diago2Coord, board) !== against) && pieceCoord.j - 1 >= 0)
         res.push(diago2Coord)
-    if (isEmptyCell(nextCoord, board)) res.push(nextCoord);
+    if (isEmptyCell(nextCoord, board) && against === gIsWhiteTurn) res.push(nextCoord);
     else return res;
     if ((pieceCoord.i === 1 && !isWhite) || (pieceCoord.i === 6 && isWhite)) {
         diff *= 2;
@@ -439,7 +455,7 @@ function isCheck(pieceCoord, against = gIsWhiteTurn, board = gBoard) {
 function pawnIsAround(coord, against = gIsWhiteTurn, board = gBoard) {
     var res = []
     var pawnCoord = { i: (against) ? coord.i - 1 : coord.i + 1, j: coord.j };
-    if (against !== gIsWhiteTurn) {
+    if (against === gIsWhiteTurn) {
         for (var j = - 1; j <= 1; j++) {
             var currPawn = { i: pawnCoord.i, j: pawnCoord.j + j }
             if (!isEmptyCell(currPawn, board) && (!against ? isWhitePawn(currPawn, board) : isBlackPawn(currPawn, board))) {
