@@ -104,10 +104,9 @@ function cellClicked(elCell) {
 
     var possibleCoords = getAllPossibleCoords(piece, cellCoord);
     // if (gIsWhiteTurn ? isCheck(gWhiteKingPos) : isCheck(gBlackKingPos)) {
-        //console.log(`Your ${gIsWhiteTurn?'white':'black'} King is check!`)
-        possibleCoords = possibleCoords.filter(toCoord => !nextStepModal(cellCoord, toCoord))
+    //console.log(`Your ${gIsWhiteTurn?'white':'black'} King is check!`)
+    possibleCoords = possibleCoords.filter(toCoord => !nextStepModal(cellCoord, toCoord))
     // }
-    console.log(possibleCoords)
     markCells(possibleCoords);
 }
 
@@ -138,33 +137,28 @@ function movePiece(elFromCell, elToCell) {
     if (piece === KING_WHITE) gWhiteKingPos = { i: toCoord.i, j: toCoord.j }
     else if (piece === KING_BLACK) gBlackKingPos = { i: toCoord.i, j: toCoord.j }
     gIsWhiteTurn = !gIsWhiteTurn
-    console.log(gIsWhiteTurn ? 'White turn' : 'Black turn')
+    // console.log(gIsWhiteTurn ? 'White turn' : 'Black turn')
     // update the DOM
     elFromCell.innerText = '';
     elToCell.innerText = isPawnAQueen(toCoord, piece);
-    isCheckMate(!gIsWhiteTurn ? gBlackKingPos : gWhiteKingPos);
-    //////////////////////////////////////////////// check Checkmate
-    // if (piece === ((!gIsWhiteTurn) ? KING_WHITE : KING_BLACK)) {
-    //     if (piece === KING_WHITE) gWhiteKingPos = { i: toCoord.i, j: toCoord.j }
-    //     else gBlackKingPos = { i: toCoord.i, j: toCoord.j }
-    // } else {
-    //     var kingCheck = (!gIsWhiteTurn) ? gBlackKingPos : gWhiteKingPos
-    //     if (getAllPossibleCoordsKing(kingCheck).length === 0 && isCheck(kingCheck).length > 1)
-    //         console.log(`CheckMate!!!!!!!! ${(!gIsWhiteTurn) ? 'White' : 'Black'} Win!`,)
-    //     else if (getAllPossibleCoordsKing(kingCheck).length === 0 && isCheck(kingCheck).length === 1) {
-    //         var optionsToProtect = isCheck(kingCheck);
-    //         console.log('optionsToProtect', optionsToProtect)
-    //         for (var i = 0; i < optionsToProtect[0].length; i++) {
-    //             console.log(canBeProtected(optionsToProtect[0][i]))
-    //             // console.log(isCheck(optionsToProtect[0][i], !gIsWhiteTurn))
-    //         }
-    //     } //for arr do isCheck on the options to block..... if there is true is not checkmate
-
-    // }
+    if(isCheckMate(!gIsWhiteTurn ? gBlackKingPos : gWhiteKingPos)) alert('CheckMate!!!!!')
 }
 function isCheckMate(kingPosition) {
-    if (getAllPossibleCoordsKing(kingPosition).length === 0 && isCheck(kingPosition).length > 1)
-        console.log(`CheckMate!!!!!!!! ${(!gIsWhiteTurn) ? 'White' : 'Black'} Win!`,)
+    if (getAllPossibleCoordsKing(kingPosition).length === 0 && isCheck(kingPosition).length > 1) return true
+        // console.log(`CheckMate!!!!!!!! ${(!gIsWhiteTurn) ? 'White' : 'Black'} Win!`,)
+    else if ((getAllPossibleCoordsKing(kingPosition).length === 0 && isCheck(kingPosition).length === 1)) {
+        for (var i = 0; i < gBoard.length; i++) {
+            for (var j = 0; j < gBoard[i].length; j++) {
+                if (gBoard[i][j] === '' || !gIsWhiteTurn === isWhitePiece({ i, j }, gBoard)) continue;
+                if (getAllPossibleCoords(gBoard[i][j], { i, j }).filter(toCoord => !nextStepModal({ i, j }, toCoord)).length !== 0) {
+                    // console.log(gBoard[i][j],i,j, 'have an option', getAllPossibleCoords(gBoard[i][j], { i, j }).filter(toCoord => !nextStepModal({ i, j }, toCoord)))
+                    return false
+                }
+            }
+        }
+        // console.log(`CheckMate!!!!!!!! ${(!gIsWhiteTurn) ? 'White' : 'Black'} Win!`,)
+        return true
+    }
 }
 
 function markCells(coords) {
@@ -437,7 +431,7 @@ function isCheck(pieceCoord, against = gIsWhiteTurn, board = gBoard) {
             threatningPieces.push(possibleCoords);
         }
     }
-    if (threatningPieces.length) console.log(`Check on ${against ? 'white' : 'black'}, threatning:`, threatningPieces);
+    //if (threatningPieces.length) console.log(`Check on ${against ? 'white' : 'black'}, threatning:`, threatningPieces); //Check who is the threatning
     return (threatningPieces.length) ? threatningPieces : false
 }
 
