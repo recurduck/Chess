@@ -29,6 +29,8 @@ var gBlackKingMoved = false
 var gBCloseRookMoved = false
 var gBFarRookMoved = false
 var gIsWhiteTurn = true;
+var gWLastMove = { fromCoord: null, toCoord: null }
+var gBLastMove = { fromCoord: null, toCoord: null }
 
 
 function restartGame() {
@@ -38,10 +40,13 @@ function restartGame() {
     gWhiteKingMoved = false
     gWCloseRookMoved = false
     gWFarRookMoved = false
+    gWLastMove = { fromCoord: null, toCoord: null }
+    gBlackKingPos = { i: 0, j: 4 }
     gBlackKingMoved = false
     gBCloseRookMoved = false
     gBFarRookMoved = false
-    gBlackKingPos = { i: 0, j: 4 }
+    gBLastMove = { fromCoord: null, toCoord: null }
+
 
     renderBoard(gBoard);
 }
@@ -139,7 +144,6 @@ function nextStepModal(fromCoord, toCoord) {
 
 
 function movePiece(elFromCell, elToCell) {
-    console.log(elFromCell);
     var fromCoord = getCellCoord(elFromCell.id);
     var toCoord = getCellCoord(elToCell.id);
     // update the MODEL
@@ -147,7 +151,8 @@ function movePiece(elFromCell, elToCell) {
     gBoard[fromCoord.i][fromCoord.j] = '';
     gBoard[toCoord.i][toCoord.j] = isPawnAQueen(toCoord, piece);
     updateKingsMoved(piece, toCoord);
-    updateRooksMoved(piece, fromCoord)
+    updateRooksMoved(piece, fromCoord);
+    gIsWhiteTurn ? gWLastMove = { fromCoord, toCoord } : gBLastMove = { fromCoord, toCoord };
     gIsWhiteTurn = !gIsWhiteTurn;
     // console.log(gIsWhiteTurn ? 'White turn' : 'Black turn')
     // update the DOM
@@ -316,9 +321,11 @@ function getAllPossibleCoordsPawn(pieceCoord, against = gIsWhiteTurn, board = gB
     var nextCoord = { i: pieceCoord.i + diff, j: pieceCoord.j };
     var diago1Coord = { i: pieceCoord.i + diff, j: pieceCoord.j + 1 }
     var diago2Coord = { i: pieceCoord.i + diff, j: pieceCoord.j - 1 }
-    if (!isEmptyCell(diago1Coord, board) && (isWhitePiece(diago1Coord, board) !== against) && pieceCoord.j + 1 < 8)
+    if (((!isEmptyCell(diago1Coord, board) && (isWhitePiece(diago1Coord, board) !== against)) ||
+        isEnPassant(diago1Coord, pieceCoord, against, isWhite, board)) && pieceCoord.j + 1 < 8)
         res.push(diago1Coord)
-    if (!isEmptyCell(diago2Coord, board) && (isWhitePiece(diago2Coord, board) !== against) && pieceCoord.j - 1 >= 0)
+    if (((!isEmptyCell(diago2Coord, board) && (isWhitePiece(diago2Coord, board) !== against)) ||
+        isEnPassant(diago2Coord, pieceCoord, against, isWhite, board)) && pieceCoord.j - 1 >= 0)
         res.push(diago2Coord)
     if (isEmptyCell(nextCoord, board) && against === gIsWhiteTurn) res.push(nextCoord);
     else return res;
@@ -328,6 +335,22 @@ function getAllPossibleCoordsPawn(pieceCoord, against = gIsWhiteTurn, board = gB
         if (isEmptyCell(nextCoord, board)) res.push(nextCoord);
     }
     return res;
+}
+
+
+function isEnPassant(diagoCoord, pieceCoord, against, isWhite, board) {
+    if (gBLastMove.fromCoord === null) return
+    // console.log('diagoCoord, pieceCoord, against, isWhite, board');
+    // console.log(diagoCoord, pieceCoord, against, isWhite, board);
+    // console.log((gBLastMove.fromCoord.j === gBLastMove.toCoord.j && Math.abs(gBLastMove.fromCoord.i - gBLastMove.toCoord.i) === 2));
+    // console.log({ i: pieceCoord.i, j: diagoCoord.j } === (isWhite ? gBLastMove.toCoord : gWLastMove.toCoord));
+    return (isEmptyCell(diagoCoord, board) &&
+        ((pieceCoord.i === 3 && isWhite) || pieceCoord.i === 4 && !isWhite) &&
+        (!against ? isWhitePawn({ i: pieceCoord.i, j: diagoCoord.j }, board) : isBlackPawn({ i: pieceCoord.i, j: diagoCoord.j }, board)) &&
+        (isWhite ? (gBLastMove.fromCoord.j === gBLastMove.toCoord.j && Math.abs(gBLastMove.fromCoord.i - gBLastMove.toCoord.i) === 2) :
+            (gWLastMove.fromCoord.j === gWLastMove.toCoord.j && Math.abs(gWLastMove.fromCoord.i - gWLastMove.toCoord.i) === 2)) &&
+        ((pieceCoord.i === (isWhite ? gBLastMove.toCoord.i : gWLastMove.toCoord.i) &&
+            diagoCoord.j === (isWhite ? gBLastMove.toCoord.j : gWLastMove.toCoord.j))))
 }
 
 
