@@ -3,6 +3,18 @@ body {
     text-align: center;
 }
 
+h1 {
+    color: white;
+}
+
+button {
+    margin: 15px;
+    width: 20vw;
+    font-size: 20px;
+    font-weight: bolder;
+    cursor: pointer;
+}
+
 .black {
     /* background-color: gray */
     background-color: #769656
@@ -16,7 +28,6 @@ body {
     /* outline: 5px solid orange; */
     background-color: #f5f669;
 }
-
 
 .mark::before {
     content: '●'; 
@@ -33,9 +44,20 @@ body {
 }
 
 .game-board td {
-    width: 40px;
-    height:40px;
+    width: 60px;
+    height:60px;
     text-align: center;
-    font-size:1.4em;
+    font-size:2.4em;
+    cursor: pointer;
 }
 
+@media screen and (max-width: 600px) { 
+    .center {
+        width: 90vw;
+    }
+    .game-board td {
+        width: 11.25vw;
+        height: 11.25vw;
+        font-size: 8vw;
+    }
+}

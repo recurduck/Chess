@@ -1,22 +1,22 @@
-<html>
-    <head>
-        <title>Playing Chess</title>
-        <meta charset="utf-8" />
-        <link rel="stylesheet" href="css/main.css">
-    </head>
-    
-    <body onload="restartGame()" >
+<!DOCTYPE html>
+<html lang="en">
 
-        <h1>Playing Chess </h1>
-        
-        <table class="center">
-            <tbody class="game-board"></tbody>
-        </table>
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
 
+<body onload="restartGame()">
+    <h1>Playing Chess</h1>
+    <table class="center">
+        <tbody class="game-board"></tbody>
+    </table>
+    <button onclick="restartGame()">Restart</button>
+    <script src="js/main.js" />
 
-        <button onclick="restartGame()">Restart</button>
-        <script src="js/main.js"></script>    
-    </body>
-    
-    
-</html>    
+</body>
+
+</html>
