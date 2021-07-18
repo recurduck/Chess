@@ -9,7 +9,7 @@ h1 {
 
 button {
     margin: 15px;
-    width: 20vw;
+    width: auto;
     font-size: 20px;
     font-weight: bolder;
     cursor: pointer;
