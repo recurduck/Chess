@@ -496,7 +496,7 @@ function getAllPossibleCoordsKing(pieceCoord, board = gBoard) {
 }
 
 function getPossicleCasteling(isWhite, coord, res) {
-    console.log(res, 'isWhite', isWhite, 'coord', coord)
+    // console.log(res, 'isWhite', isWhite, 'coord', coord)
     if (isWhite && !gWhiteKingMoved) {
         if (coord.j === 5 && isEmptyCell({ i: coord.i, j: coord.j + 1 }) &&
             !isCheck({ i: coord.i, j: coord.j + 1 }))
