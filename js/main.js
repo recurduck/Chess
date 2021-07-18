@@ -104,17 +104,18 @@ function renderBoard(board) {
 
 function cellClicked(elCell) {
     // if the target is marked - move the piece!
+    var cellCoord = getCellCoord(elCell.id);
     if (elCell.classList.contains('mark') || elCell.classList.contains('hided-mark')) {
         movePiece(gSelectedElCell, elCell);
         cleanBoard();
         return;
     }
+    if(isEmptyCell(cellCoord)) return
     cleanBoard();
     elCell.classList.add('selected');
     gSelectedElCell = elCell;
 
     // console.log('elCell.id: ', elCell.id);
-    var cellCoord = getCellCoord(elCell.id);
     var piece = gBoard[cellCoord.i][cellCoord.j];
 
     var possibleCoords = getAllPossibleCoords(piece, cellCoord);
