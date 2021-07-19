@@ -80,7 +80,7 @@ function buildBoard() {
 
 }
 
-function renderBoard(board) {
+function renderBoard(board = gBoard) {
     var strHtml = '';
     for (var i = 0; i < board.length; i++) {
         var row = board[i];
@@ -148,6 +148,9 @@ function movePiece(elFromCell, elToCell) {
     var fromCoord = getCellCoord(elFromCell.id);
     var toCoord = getCellCoord(elToCell.id);
     // update the MODEL
+    if(isEnPassant(toCoord, fromCoord, gIsWhiteTurn, isWhitePawn(fromCoord))) {
+        gBoard[fromCoord.i][toCoord.j] = '';
+    }
     var piece = gBoard[fromCoord.i][fromCoord.j];
     gBoard[fromCoord.i][fromCoord.j] = '';
     gBoard[toCoord.i][toCoord.j] = isPawnAQueen(toCoord, piece);
@@ -160,6 +163,7 @@ function movePiece(elFromCell, elToCell) {
     elFromCell.innerText = '';
     elToCell.innerText = isPawnAQueen(toCoord, piece);
     if (isCheckMate(!gIsWhiteTurn ? gBlackKingPos : gWhiteKingPos)) alert('CheckMate!!!!!')
+    renderBoard(gBoard)
 }
 
 function updateKingsMoved(piece, toCoord) {
@@ -339,7 +343,7 @@ function getAllPossibleCoordsPawn(pieceCoord, against = gIsWhiteTurn, board = gB
 }
 
 
-function isEnPassant(diagoCoord, pieceCoord, against, isWhite, board) {
+function isEnPassant(diagoCoord, pieceCoord, against, isWhite, board = gBoard) {
     if (gBLastMove.fromCoord === null) return
     // console.log('diagoCoord, pieceCoord, against, isWhite, board');
     // console.log(diagoCoord, pieceCoord, against, isWhite, board);
