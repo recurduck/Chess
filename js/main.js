@@ -103,6 +103,7 @@ function renderBoard(board = gBoard) {
 
 
 function cellClicked(elCell) {
+    console.log(elCell)
     // if the target is marked - move the piece!
     var cellCoord = getCellCoord(elCell.id);
     if (elCell.classList.contains('mark') || elCell.classList.contains('hided-mark')) {
@@ -110,7 +111,7 @@ function cellClicked(elCell) {
         cleanBoard();
         return;
     }
-    if(isEmptyCell(cellCoord)) return
+    if (isEmptyCell(cellCoord)) return
     cleanBoard();
     elCell.classList.add('selected');
     gSelectedElCell = elCell;
@@ -148,7 +149,7 @@ function movePiece(elFromCell, elToCell) {
     var fromCoord = getCellCoord(elFromCell.id);
     var toCoord = getCellCoord(elToCell.id);
     // update the MODEL
-    if(isEnPassant(toCoord, fromCoord, gIsWhiteTurn, isWhitePawn(fromCoord))) {
+    if (isEnPassant(toCoord, fromCoord, gIsWhiteTurn, isWhitePawn(fromCoord))) {
         gBoard[fromCoord.i][toCoord.j] = '';
     }
     var piece = gBoard[fromCoord.i][fromCoord.j];
@@ -358,106 +359,44 @@ function isEnPassant(diagoCoord, pieceCoord, against, isWhite, board = gBoard) {
             diagoCoord.j === (isWhite ? gBLastMove.toCoord.j : gWLastMove.toCoord.j))))
 }
 
-
 function getAllPossibleCoordsRook(pieceCoord, board = gBoard) {
     var res = [];
-    for (var i = pieceCoord.i - 1; i >= 0; i--) {
-        var coord = { i, j: pieceCoord.j };
-        if (!isEmptyCell(coord, board)) {
-            if (isWhitePiece(coord, board) === gIsWhiteTurn) break;
-            else {
-                res.push(coord);
-                break;
+    for (var dir = 0; dir < 4; dir++) {
+        for (var i = _getDirection(dir, pieceCoord); (dir % 2 === 0) ? i >= 0 : i < 8; (dir % 2 === 0) ? i-- : i++) {
+            var coord = (dir < 2) ? { i, j: pieceCoord.j } : { i: pieceCoord.i, j: i };
+            if (!isEmptyCell(coord, board)) {
+                if (isWhitePiece(coord, board) === gIsWhiteTurn) break;
+                else {
+                    res.push(coord);
+                    break;
+                }
             }
+            res.push(coord);
         }
-        res.push(coord);
-    }
-    for (var i = pieceCoord.i + 1; i < 8; i++) {
-        var coord = { i, j: pieceCoord.j };
-        if (!isEmptyCell(coord, board)) {
-            if (isWhitePiece(coord, board) === gIsWhiteTurn) break;
-            else {
-                res.push(coord);
-                break;
-            }
-        }
-        res.push(coord);
-    }
-    for (var j = pieceCoord.j - 1; j >= 0; j--) {
-        var coord = { i: pieceCoord.i, j };
-        if (!isEmptyCell(coord, board)) {
-            if (isWhitePiece(coord, board) === gIsWhiteTurn) break;
-            else {
-                res.push(coord);
-                break;
-            }
-        }
-        res.push(coord);
-    }
-    for (var j = pieceCoord.j + 1; j < 8; j++) {
-        var coord = { i: pieceCoord.i, j };
-        if (!isEmptyCell(coord, board)) {
-            if (isWhitePiece(coord, board) === gIsWhiteTurn) break;
-            else {
-                res.push(coord);
-                break;
-            }
-        }
-        res.push(coord);
     }
     return res;
 }
 
+function _getDirection(dir, pieceCoord) {
+    return ((dir < 2) ? pieceCoord.i : pieceCoord.j) + ((dir % 2 === 0) ? -1 : 1);
+}
 
 function getAllPossibleCoordsBishop(pieceCoord, board = gBoard) {
     var res = [];
-    var i = pieceCoord.i - 1;
-    for (var idx = pieceCoord.j + 1; i >= 0 && idx < 8; idx++) {
-        var coord = { i: i--, j: idx };
-        if (!isEmptyCell(coord, board)) {
-            if (isWhitePiece(coord, board) === gIsWhiteTurn) break;
-            else {
-                res.push(coord);
-                break;
+    for (let dir = 0; dir < 4; dir++) {
+        var i = pieceCoord.i + (dir < 2 ? -1 : 1);
+        for (var idx = pieceCoord.j + (dir % 2 === 0 ? 1 : -1); ((dir < 2) ? (i >= 0) : (i < 8)) && ((dir % 2 === 0) ? (idx < 8) : (idx >= 0)); (dir % 2 === 0) ? idx++ : idx--) {
+            var coord = { i: (dir < 2) ? i-- : i++, j: idx };
+            console.log(i, coord);
+            if (!isEmptyCell(coord, board)) {
+                if (isWhitePiece(coord, board) === gIsWhiteTurn) break;
+                else {
+                    res.push(coord);
+                    break;
+                }
             }
+            res.push(coord);
         }
-        res.push(coord);
-    }
-    i = pieceCoord.i - 1;
-    for (var idx = pieceCoord.j - 1; i >= 0 && idx >= 0; idx--) {
-        var coord = { i: i--, j: idx };
-        if (!isEmptyCell(coord, board)) {
-            if (isWhitePiece(coord, board) === gIsWhiteTurn) break;
-            else {
-                res.push(coord);
-                break;
-            }
-        }
-        res.push(coord);
-    }
-    i = pieceCoord.i + 1;
-    for (var idx = pieceCoord.j + 1; i < 8 && idx < 8; idx++) {
-        var coord = { i: i++, j: idx };
-        if (!isEmptyCell(coord, board)) {
-            if (isWhitePiece(coord, board) === gIsWhiteTurn) break;
-            else {
-                res.push(coord);
-                break;
-            }
-        }
-        res.push(coord);
-    }
-    i = pieceCoord.i + 1;
-    for (var idx = pieceCoord.j - 1; i < 8 && idx >= 0; idx--) {
-        var coord = { i: i++, j: idx };
-        if (!isEmptyCell(coord, board)) {
-            if (isWhitePiece(coord, board) === gIsWhiteTurn) break;
-            else {
-                res.push(coord);
-                break;
-            }
-        }
-        res.push(coord);
     }
     return res;
 }
