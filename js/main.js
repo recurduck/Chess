@@ -377,9 +377,6 @@ function getAllPossibleCoordsRook(pieceCoord, board = gBoard) {
     return res;
 }
 
-function _getDirection(dir, pieceCoord) {
-    return ((dir < 2) ? pieceCoord.i : pieceCoord.j) + ((dir % 2 === 0) ? -1 : 1);
-}
 
 function getAllPossibleCoordsBishop(pieceCoord, board = gBoard) {
     var res = [];
@@ -399,6 +396,11 @@ function getAllPossibleCoordsBishop(pieceCoord, board = gBoard) {
         }
     }
     return res;
+}
+
+
+function _getDirection(dir, pieceCoord) {
+    return ((dir < 2) ? pieceCoord.i : pieceCoord.j) + ((dir % 2 === 0) ? -1 : 1);
 }
 
 
@@ -500,7 +502,10 @@ function isCheck(pieceCoord, against = gIsWhiteTurn, board = gBoard) {
 function pawnIsAround(coord, against = gIsWhiteTurn, board = gBoard) {
     var res = []
     var pawnCoord = { i: (against) ? coord.i - 1 : coord.i + 1, j: coord.j };
+  console.log('@@@piece cooord', coord);
+
     if (against === gIsWhiteTurn) {
+        console.log('entred');
         for (var j = - 1; j <= 1; j++) {
             var currPawn = { i: pawnCoord.i, j: pawnCoord.j + j }
             if (!isEmptyCell(currPawn, board) && (!against ? isWhitePawn(currPawn, board) : isBlackPawn(currPawn, board))) {
