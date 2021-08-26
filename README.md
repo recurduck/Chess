@@ -62,7 +62,7 @@
 ## About The Project
 This Project shows the rules of chess and you can play only against yourself
 
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
+[![Product Name Screen Shot][product-screenshot]](https://recurduck.github.io/Chess/)
 
 ### Built With
 
