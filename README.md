@@ -178,4 +178,4 @@ Project Link: [https://github.com/your_username/repo_name](https://github.com/yo
 [license-url]: https://github.com/recurduck/chess/blob/master/LICENSE.txt
 [github-shield]: https://img.shields.io/badge/-GitHub-black.svg?style=for-the-badge&logo=github&colorB=555
 [github-url]: https://github.com/recurduck
-[product-screenshot]: images/chess.png
+[product-screenshot]: chess.png
