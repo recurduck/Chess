@@ -176,6 +176,6 @@ Project Link: [https://github.com/your_username/repo_name](https://github.com/yo
 [issues-url]: https://github.com/recurduck/chess/issues
 [license-shield]: https://img.shields.io/github/license/recurduck/chess.svg?style=for-the-badge
 [license-url]: https://github.com/recurduck/chess/blob/master/LICENSE.txt
-[github-shield]: https://img.shields.io/badge/-GitHub-black.svg?style=for-the-badge&logo=linkedin&colorB=555
+[github-shield]: https://img.shields.io/badge/-GitHub-black.svg?style=for-the-badge&logo=github&colorB=555
 [github-url]: https://github.com/recurduck
 [product-screenshot]: images/chess.png
